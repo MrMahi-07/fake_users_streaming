@@ -2,7 +2,6 @@ from kafka import KafkaProducer
 from faker import Faker
 from json import dumps
 from time import sleep
-import random
 
 fake = Faker()
 
@@ -39,4 +38,4 @@ def produce_messages(count=10, delay=1):
     print("Finished producing messages.")
 
 if __name__ == "__main__":
-    produce_messages(count=10, delay=0.5)  # You can change these values
+    produce_messages(count=10, delay=2)  # You can change these values
