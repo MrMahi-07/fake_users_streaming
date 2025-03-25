@@ -1,9 +1,10 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
+from airflow.utils.dates import days_ago
 from datetime import datetime
 
 default_args = {
-    'start_date': datetime(2025, 3, 20),
+    "start_date": days_ago(1),
     'retries': 1,
 }
 

@@ -1,34 +1,47 @@
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from datetime import datetime
+import sys
+import os
 
+KAFKA_PATH = "/opt/airflow/kafka"  # Ensure this is the correct path
+
+if KAFKA_PATH not in sys.path:
+    sys.path.append(KAFKA_PATH)
+
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.utils.dates import days_ago
+from kafka_user_producer import produce_messages, produce_messages_upto
+
+# Default arguments for DAG
 default_args = {
-    'start_date': datetime(2024, 1, 1),
-    'retries': 1,
+    "start_date": days_ago(1),
+    "retries": 1,
 }
 
+
+# to run the producer for a fixed number of messages
 with DAG(
-    dag_id='kafka_producer_dag',
+    dag_id="kafka_producer_dag",
     default_args=default_args,
     schedule_interval=None,  # manually trigger from UI
     catchup=False,
-    tags=['kafka'],
+    tags=["kafka", "fixed"],
 ) as dag:
 
-    run_producer = BashOperator(
-        task_id='run_kafka_producer',
-        bash_command='python /opt/airflow/kafka/kafka_user_producer.py'
+    PythonOperator(
+        task_id="run_kafka_producer", python_callable=produce_messages, op_args=[10, 3]
     )
 
+# to run the producer for a fixed amount of time
 with DAG(
-    dag_id='test_dag',
+    dag_id="kafka_producer_upto_dag",
     default_args=default_args,
     schedule_interval=None,  # manually trigger from UI
     catchup=False,
-    tags=['test'],
+    tags=["kafka", "time"],
 ) as dag:
 
-    run_consumer = BashOperator(
-        task_id='run_helo_world',
-        bash_command='echo "Hello, World!"' 
+    PythonOperator(
+        task_id="run_kafka_producer_upto",
+        python_callable=produce_messages_upto,
+        op_args=[30],
     )
