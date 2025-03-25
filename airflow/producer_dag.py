@@ -1,15 +1,7 @@
-import sys
-import os
-
-KAFKA_PATH = "/opt/airflow/kafka"  # Ensure this is the correct path
-
-if KAFKA_PATH not in sys.path:
-    sys.path.append(KAFKA_PATH)
-
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
-from kafka_user_producer import produce_messages, produce_messages_upto
+from kafka_scripts.kafka_user_producer import produce_messages, produce_messages_upto
 
 # Default arguments for DAG
 default_args = {
