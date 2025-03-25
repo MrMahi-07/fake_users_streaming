@@ -5,7 +5,7 @@ from kafka.consumer.fetcher import ConsumerRecord
 
 # Kafka config
 KAFKA_TOPIC = "fake-users"
-KAFKA_BROKER = "localhost:9092"
+KAFKA_BROKER = "kafka:9092"
 GROUP_ID = "user-consumer-group"
 
 fn_value_deserializer: Callable[[bytes], dict[str,str]] = lambda v: loads(v.decode("utf-8"))
@@ -25,7 +25,7 @@ print(f"Started consuming messages from topic '{KAFKA_TOPIC}'...")
 try:
     for message in consumer:         
         user = message.value
-        print("Consumed:", consumer)
+        print("Consumed:", user)
 except KeyboardInterrupt:
     print("\nStopped consuming.")
 

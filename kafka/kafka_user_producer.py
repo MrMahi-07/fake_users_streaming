@@ -5,9 +5,10 @@ from time import sleep
 
 fake = Faker()
 
+
 # Kafka config
 KAFKA_TOPIC = "fake-users"
-KAFKA_BROKER = "localhost:9092"
+KAFKA_BROKER = "kafka:9092"
 
 # Set up Kafka producer
 producer = KafkaProducer(
