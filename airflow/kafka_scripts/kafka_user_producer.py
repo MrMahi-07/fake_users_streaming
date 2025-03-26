@@ -10,12 +10,16 @@ fake = Faker()
 
 # Kafka config
 KAFKA_TOPIC = "fake-users"
-KAFKA_BROKER = "kafka:9092"
+KAFKA_BROKER = "kafka:29092"
 
-# Set up Kafka producer
-producer = KafkaProducer(
-    bootstrap_servers=KAFKA_BROKER, value_serializer=lambda v: dumps(v).encode("utf-8")
-)
+
+def get_kafka_producer():
+    return KafkaProducer(
+        bootstrap_servers=KAFKA_BROKER,
+        value_serializer=lambda v: dumps(v).encode("utf-8"),
+        retries=0,
+        request_timeout_ms=5000,
+    )
 
 
 def generate_fake_user():
@@ -29,10 +33,13 @@ def generate_fake_user():
         "created_at": fake.iso8601(),
     }
 
+
 # Produce messages for a fixed amount of time
-def produce_messages_upto(up_time: int = 60, delay: int = 1):
+def produce_messages_upto(up_time: int = 60, delay: int = 1) -> str:
+    producer = get_kafka_producer()  # Set up Kafka producer
+
     print(
-        f"Producing fake user messages to topic '{KAFKA_TOPIC}' for {up_time} seconds..."
+        f"Producing messages to topic '{KAFKA_TOPIC}' for {up_time} seconds with a delay of {delay} seconds..."
     )
     start_time = time()
     try:
@@ -41,16 +48,24 @@ def produce_messages_upto(up_time: int = 60, delay: int = 1):
             producer.send(KAFKA_TOPIC, value=user)
             print(f"✅ Message sent - user name: {user['name']} & id: {user['id']}")
             sleep(round(uniform(0.5, delay), 1))  # Simulate processing time
+
     except KeyboardInterrupt:
         print("\nStopped producing.")
     finally:
         producer.flush()
         producer.close()
-        print(f"Finished producing messages. Total time: {time() - start_time:.2f} seconds")
+        print(
+            f"Finished producing messages. Total time: {time() - start_time:.2f} seconds"
+        )
+
+    return f"Produced messages for {up_time} seconds."
+
 
 # Produce messages for a fixed number of times
-def produce_messages(count=10, delay=1):
-    print(f"Producing {count} fake user messages to topic '{KAFKA_TOPIC}'...")
+def produce_messages(count=10, delay=1) -> str:
+    producer = get_kafka_producer()  # Set up Kafka producer
+
+    print(f"Producing {count} messages to topic '{KAFKA_TOPIC}'...")
 
     try:
         for _ in range(count):
@@ -58,6 +73,7 @@ def produce_messages(count=10, delay=1):
             producer.send(KAFKA_TOPIC, value=user)
             print(f"✅ Message sent - user name: {user['name']} & id: {user['id']}")
             sleep(round(uniform(0.5, delay), 1))  # Simulate processing time
+
     except KeyboardInterrupt:
         print("\nStopped producing.")
     finally:
@@ -65,7 +81,9 @@ def produce_messages(count=10, delay=1):
         producer.close()
         print("Finished producing messages.")
 
+    return f"Produced {count} messages."
+
 
 if __name__ == "__main__":
-    # produce_messages(count=10, delay=4)  # You can change these 
-    produce_messages_upto(10)  # You can change these
+    produce_messages(count=10, delay=4)  # You can change these
+    # produce_messages_upto(10)  # You can change these
