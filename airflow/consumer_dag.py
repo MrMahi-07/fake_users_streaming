@@ -1,22 +1,25 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.utils.dates import days_ago
-from datetime import datetime
+from airflow.operators.python import PythonOperator
+from pendulum import today
+from kafka_scripts.kafka_user_consumer import consume_messages
 
+# Default arguments for DAG
 default_args = {
-    "start_date": days_ago(1),
-    'retries': 1,
+    "owner": "airflow",
+    "start_date": today("UTC").add(days=-1),
+    "retries": 1,
 }
 
 with DAG(
-    dag_id='kafka_consumer_dag',
+    dag_id="kafka_consumer_dag",
     default_args=default_args,
     schedule_interval=None,  # manually trigger from UI
     catchup=False,
-    tags=['kafka'],
+    tags=["kafka"],
 ) as dag:
 
-    run_consumer = BashOperator(
-        task_id='run_kafka_consumer',
-        bash_command='python /opt/airflow/kafka/kafka_user_consumer.py'
+    PythonOperator(
+        task_id="run_kafka_consumer",
+        python_callable=consume_messages,
+        op_args=[3],
     )
