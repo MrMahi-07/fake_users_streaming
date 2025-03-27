@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from pendulum import today
-from kafka_scripts.kafka_user_consumer import consume_messages
+from kafka_scripts.consumer import consume_messages
 
 # Default arguments for DAG
 default_args = {

@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from kafka_scripts.kafka_user_producer import produce_messages, produce_messages_upto
+from kafka_scripts.producer import produce_messages, produce_messages_upto
 from pendulum import today
 
 # Default arguments for DAG
