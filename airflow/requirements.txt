@@ -1,2 +1,4 @@
 Faker
 kafka-python
+pyspark
+psycopg2-binary
