@@ -9,6 +9,8 @@ default_args = {
     "retries": 0,
 }
 
+KAFKA_BROKER = "kafka:29092"  # Kafka broker address
+
 # to run the producer for a fixed amount of time
 with DAG(
     dag_id="kafka_producer_upto_dag",
@@ -21,7 +23,7 @@ with DAG(
     PythonOperator(
         task_id="run_kafka_producer_upto",
         python_callable=produce_messages_upto,
-        op_args=[30],
+        op_kwargs={"kafka_broker": KAFKA_BROKER},
     )
 
 # to run the producer for a fixed number of messages
@@ -36,5 +38,5 @@ with DAG(
     PythonOperator(
         task_id="run_kafka_producer",
         python_callable=produce_messages,
-        op_args=[10, 3],
+        op_kwargs={"kafka_broker": KAFKA_BROKER},
     )

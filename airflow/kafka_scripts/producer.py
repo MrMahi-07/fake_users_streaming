@@ -10,12 +10,13 @@ fake = Faker()
 
 # Kafka config
 KAFKA_TOPIC = "fake-users"
-KAFKA_BROKER = "kafka:29092"
+KAFKA_BROKER = "localhost:9092"
 
 
-def get_kafka_producer():
+def get_kafka_producer(kafka_broker: str = KAFKA_BROKER) -> KafkaProducer:
+    """Create and return a Kafka producer."""
     return KafkaProducer(
-        bootstrap_servers=KAFKA_BROKER,
+        bootstrap_servers=kafka_broker,
         value_serializer=lambda v: dumps(v).encode("utf-8"),
         retries=0,
         request_timeout_ms=5000,
@@ -23,20 +24,27 @@ def get_kafka_producer():
 
 
 def generate_fake_user():
-    return {
+    """Generate a fake user profile."""
+
+    user = {
         "id": fake.uuid4(),
         "name": fake.name(),
-        "email": fake.email(),
+        "gender": fake.passport_gender(),
         "address": fake.address(),
         "phone": fake.phone_number(),
         "dob": fake.date_of_birth(minimum_age=18, maximum_age=60).isoformat(),
-        "created_at": fake.iso8601(),
     }
+
+    # Generate a fake email address based on the user's name
+    user["email"] = f"{user['name'].replace(' ', '.').lower()}@example.com"
+    return user
 
 
 # Produce messages for a fixed amount of time
-def produce_messages_upto(up_time: int = 60, delay: int = 1) -> str:
-    producer = get_kafka_producer()  # Set up Kafka producer
+def produce_messages_upto(
+    up_time: int = 60, delay: int = 1, kafka_broker=KAFKA_BROKER
+) -> str:
+    producer = get_kafka_producer(kafka_broker)  # Set up Kafka producer
 
     print(
         f"Producing messages to topic '{KAFKA_TOPIC}' for {up_time} seconds with a delay of {delay} seconds..."
@@ -62,8 +70,8 @@ def produce_messages_upto(up_time: int = 60, delay: int = 1) -> str:
 
 
 # Produce messages for a fixed number of times
-def produce_messages(count=10, delay=1) -> str:
-    producer = get_kafka_producer()  # Set up Kafka producer
+def produce_messages(count=10, delay=1, kafka_broker=KAFKA_BROKER) -> str:
+    producer = get_kafka_producer(kafka_broker)  # Set up Kafka producer
 
     print(f"Producing {count} messages to topic '{KAFKA_TOPIC}'...")
 
