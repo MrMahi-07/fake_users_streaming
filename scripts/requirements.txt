@@ -1,4 +1,5 @@
 Faker
 kafka-python
 pyspark
+apache-airflow-providers-apache-spark
 psycopg2-binary

@@ -94,8 +94,11 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres/postgres
       AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
+      PYTHONPATH: /opt/airflow
     volumes:
-      - ./airflow:/opt/airflow/dags
+      - ./scripts/dags:/opt/airflow/dags
+      - ./scripts/kafka_scripts:/opt/airflow/kafka_scripts
+      - /var/run/docker.sock:/var/run/docker.sock
     command: [ "airflow", "webserver" ]
     healthcheck:
       test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
@@ -115,8 +118,11 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres@postgres/postgres
       AIRFLOW__WEBSERVER__SECRET_KEY: this_is_a_very_secured_key
+      PYTHONPATH: /opt/airflow
     volumes:
-      - ./airflow:/opt/airflow/dags
+      - ./scripts/dags:/opt/airflow/dags
+      - ./scripts/kafka_scripts:/opt/airflow/kafka_scripts
+      - /var/run/docker.sock:/var/run/docker.sock
     command: [ "airflow", "scheduler" ]
     networks:
       - spark-network
@@ -130,12 +136,14 @@ services:
     environment:
       SPARK_MODE: master
     volumes:
-      - ./spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
-      - ./spark/app:/opt/spark/app
-      - ./spark/jars:/opt/spark/jars
+      - ./scripts/spark/conf/spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+      - ./scripts/spark/app:/opt/spark/app
+      - ./scripts/spark/jars:/opt/spark/jars
     depends_on:
       postgres:
         condition: service_healthy
+    command: >
+      bash -c "pip install psycopg2-binary && /opt/bitnami/scripts/spark/run.sh"
     networks:
       - spark-network
 
